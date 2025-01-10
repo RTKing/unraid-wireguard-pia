@@ -142,7 +142,7 @@ fi
 # on firewalls. You can remove that line if your network does not
 # require it.
 if [[ $PIA_DNS == "true" ]]; then
-  dnsServer=$(echo "$wireguard_json" | jq -r '.dns_servers[0]')
+  dnsServer=$(echo "$wireguard_json" | jq -r '.dns_servers[0:2]' | grep ^\  | cut -d\" -f2 | xargs echo | sed -e 's/ /,/g')
   echo "Trying to set up DNS to $dnsServer. In case you do not have resolvconf,"
   echo "this operation will fail and you will not get a VPN. If you have issues,"
   echo "start this script without PIA_DNS."
@@ -156,14 +156,23 @@ echo "
 Address = $(echo "$wireguard_json" | jq -r '.peer_ip')
 PrivateKey = $privKey
 $dnsSettingForVPN
+
 [Peer]
-PersistentKeepalive = 25
 PublicKey = $(echo "$wireguard_json" | jq -r '.server_key')
 AllowedIPs = 0.0.0.0/0
-Endpoint = ${WG_SERVER_IP}:$(echo "$wireguard_json" | jq -r '.server_port')
-" > ${PIA_CONF_PATH} || exit 1
+Endpoint = ${WG_SERVER_IP}:$(echo "$wireguard_json" | jq -r '.server_port')" > ${PIA_CONF_PATH} || exit 1
 echo -e "${green}OK!${nc}"
 
+# Add PersistentKeepalive if KEEPALIVE is set
+[ $KEEPALIVE -gt 0 ] && echo "PersistentKeepalive = $KEEPALIVE" >> ${PIA_CONF_PATH}
+
+# unRAID specific config
+echo -n "Trying to write /etc/wireguard/wg0.cfg..."
+echo "
+PublicKey:0=\"$pubKey\"
+TYPE:1=\"8\"
+" > /etc/wireguard/wg0.cfg || exit 1
+echo -e ${GREEN}OK!${NC}
 
 if [[ $PIA_CONNECT == "true" ]]; then
   # Start the WireGuard interface.

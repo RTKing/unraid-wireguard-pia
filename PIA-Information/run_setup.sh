@@ -112,6 +112,7 @@ while :; do
   else
     PIA_TOKEN=$( awk 'NR == 1' /opt/piavpn-manual/token )
     export PIA_TOKEN
+    echo $PIA_TOKEN > /pia/.token
     rm -f /opt/piavpn-manual/token
     break
   fi

@@ -1,0 +1,17 @@
+services:
+  wireguard:
+    image: rtking18/unraid-wireguard-pia:local
+    container_name: unraid-wireguard-pia
+    volumes:
+      - pia:/pia
+      - /mnt/appdata/pia-wireguard:/etc/wireguard
+    environment:
+      - PIA_LOCATION=${LOCATION}
+      - PIA_USER=${USERNAME}
+      - PIA_PASS=${PASSWORD}
+      - KEEPALIVE=${KEEPALIVE}
+
+volumes:
+  pia:
+
+# docker build -t rtking18/unraid-wireguard-pia:local .

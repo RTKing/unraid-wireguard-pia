@@ -1,0 +1,22 @@
+name: Docker Description
+
+on:
+  push:
+    branches:
+      - master
+      - feature/*
+    paths:
+      - README.md
+      - .github/workflows/dockerhub-description.yml
+
+jobs:
+  dockerHubDescription:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Docker Hub Description
+      uses: peter-evans/dockerhub-description@v4.0.0   
+      with:
+        username: ${{ vars.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        repository: rtking18/unraid-wireguard-pia
