@@ -162,7 +162,7 @@ AllowedIPs=0.0.0.0/0" > ${PIA_CONF_PATH} || exit 1
 echo -e "${green}OK!${nc}"
 
 # Add PersistentKeepalive if KEEPALIVE is set
-[ $KEEPALIVE -gt 0 ] && echo "PersistentKeepalive = $KEEPALIVE" >> ${PIA_CONF_PATH}
+[ $KEEPALIVE -gt 0 ] && echo "PersistentKeepalive=$KEEPALIVE" >> ${PIA_CONF_PATH}
 
 # unRAID specific config
 echo -n "Trying to write /etc/wireguard/wg0.cfg..."
