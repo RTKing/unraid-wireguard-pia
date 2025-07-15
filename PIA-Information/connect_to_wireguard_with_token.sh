@@ -173,6 +173,39 @@ DNS:1=\"$dnsServer\"
 " > /etc/wireguard/wg0.cfg || exit 1
 echo -e ${GREEN}OK!${NC}
 
+echo -n "Trying to write /etc/wireguard/unraid-manual-guide.md..."
+echo "
+# unRAID Manual Configuration Guide
+
+## Local Information
+
+- Local name: `PIA`
+- Local private key: `$privKey`
+- Local public key: `$pubKey`
+- Network protocol: `IPv4 only`
+- Local tunnel network pool: `$(echo "$wireguard_json" | jq -r '.peer_ip')/24` -- Remove last three numbers and replace with 0
+- Local tunnel address: `$(echo "$wireguard_json" | jq -r '.peer_ip')`
+- Local endpoint: _This will remain empty_
+- Local server uses NAT: _Read-only field_
+- Local tunnel firewall: _This will remain empty_
+- MTU size: _This should remain (auto)_
+
+## Peer Information
+
+- Peer name: `Containers`
+- Peer type of access: `VPN tunneled access for docker`
+- Peer private key: _This will remain empty_
+- Peer public key: `$(echo "$wireguard_json" | jq -r '.server_key')`
+- Peer preshared key: _This will remain empty_
+- Peer tunnel address: `$(echo "$wireguard_json" | jq -r '.peer_ip')`
+- Peer endpoint: `${WG_SERVER_IP}:$(echo "$wireguard_json" | jq -r '.server_port')`
+- Peer allowed IPs: `0.0.0.0/0`
+- Peer DNS server: `$dnsServer`
+- Persistent keepalive: `25`
+
+" > /etc/wireguard/unraid-manual-guide.md || exit 1
+
+
 if [[ $PIA_CONNECT == "true" ]]; then
   # Start the WireGuard interface.
   # If something failed, stop this script.
