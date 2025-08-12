@@ -12,4 +12,5 @@ Docker Run
 Docker Build
 
 ```CMD
+docker build -t rtking18/unraid-wireguard-pia:local .
 ```
