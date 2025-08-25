@@ -148,8 +148,28 @@ if [[ $PIA_DNS == "true" ]]; then
   echo "start this script without PIA_DNS."
   echo
 fi
+
+# Standard Wireguard Configuration
+PIA_CONF_PATH="/etc/wireguard/wg0-standard.conf"
 echo -n "Trying to write ${PIA_CONF_PATH}..."
 mkdir -p "$(dirname "$PIA_CONF_PATH")"
+echo "
+[Interface]
+Address = $(echo "$wireguard_json" | jq -r '.peer_ip')/32
+PrivateKey = $privKey
+DNS = $dnsServer
+
+[Peer]
+PublicKey = $(echo "$wireguard_json" | jq -r '.server_key')
+AllowedIPs = 0.0.0.0/0
+Endpoint = ${WG_SERVER_IP}:$(echo "$wireguard_json" | jq -r '.server_port')
+PersistentKeepalive = 25
+" > ${PIA_CONF_PATH} || exit 1
+echo -e "${green}OK!${nc}"
+
+# unRAID Configuration
+PIA_CONF_PATH="/etc/wireguard/wg0-unRAID.conf"
+echo -n "Trying to write ${PIA_CONF_PATH}..."
 echo "
 [Interface]
 PrivateKey=$privKey
@@ -164,18 +184,23 @@ echo -e "${green}OK!${nc}"
 # Add PersistentKeepalive if KEEPALIVE is set
 [ $KEEPALIVE -gt 0 ] && echo "PersistentKeepalive=$KEEPALIVE" >> ${PIA_CONF_PATH}
 
-# unRAID specific config
-echo -n "Trying to write /etc/wireguard/wg0.cfg..."
+# unRAID Secondary Configuration
+PIA_CONF_PATH="/etc/wireguard/wg0-unRAID.cfg"
+echo -n "Trying to write ${PIA_CONF_PATH}..."
 echo "
 PublicKey:0=\"$pubKey\"
 TYPE:1=\"8\"
 DNS:1=\"$dnsServer\"
-" > /etc/wireguard/wg0.cfg || exit 1
-echo -e ${GREEN}OK!${NC}
+" > ${PIA_CONF_PATH} || exit 1
+echo -e "${green}OK!${nc}"
 
-echo -n "Trying to write /etc/wireguard/unraid-manual-guide.md..."
+# unRAID Guide for Manual Configuration
+PIA_CONF_PATH="/etc/wireguard/unraid-manual-guide.md"
+echo -n "Trying to write ${PIA_CONF_PATH}..."
 echo "
 # unRAID Manual Configuration Guide
+
+** TUNNEL MUST BE DISABLED BEFORE EDITING **
 
 ## Local Information
 
@@ -183,7 +208,7 @@ echo "
 - Local private key: \`$privKey\`
 - Local public key: \`$pubKey\`
 - Network protocol: \`IPv4 only\`
-- Local tunnel network pool: \`$(echo "$wireguard_json" | jq -r '.peer_ip')/24\` -- Remove last three numbers and replace with 0
+- Local tunnel network pool: \`$(echo "$wireguard_json" | jq -r '.peer_ip' | awk -F'[./]' '{print $1"."$2"."$3".0/24"}')\`
 - Local tunnel address: \`$(echo "$wireguard_json" | jq -r '.peer_ip')\`
 - Local endpoint: _This will remain empty_
 - Local server uses NAT: _Read-only field_
@@ -203,7 +228,8 @@ echo "
 - Peer DNS server: \`$dnsServer\`
 - Persistent keepalive: \`25\`
 
-" > /etc/wireguard/unraid-manual-guide.md || exit 1
+" > ${PIA_CONF_PATH} || exit 1
+echo -e "${green}OK!${nc}"
 
 
 if [[ $PIA_CONNECT == "true" ]]; then
