@@ -4,7 +4,7 @@ services:
     container_name: unraid-wireguard-pia
     volumes:
       - pia:/pia
-      - /mnt/appdata/pia-wireguard:/etc/wireguard
+      - ~/data/unraid-wireguard:/etc/wireguard
     environment:
       - PIA_LOCATION=${LOCATION}
       - PIA_USER=${USERNAME}
