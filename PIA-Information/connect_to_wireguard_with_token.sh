@@ -231,6 +231,27 @@ echo "
 " > ${PIA_CONF_PATH} || exit 1
 echo -e "${green}OK!${nc}"
 
+# JSON Object for unRAID UI Console Snippet Automation
+PIA_CONF_PATH="/etc/wireguard/pia-unraid-wg0.json"
+echo -n "Trying to write ${PIA_CONF_PATH}..."
+echo "{
+  \"Name:0\": \"PIA\",
+  \"PrivateKey:0\": \"$privKey\",
+  \"PublicKey:0\": \"$pubKey\",
+  \"gui:Network:0\": \"$(echo "$wireguard_json" | jq -r '.peer_ip' | awk -F'[./]' '{print $1"."$2"."$3".0"}')\",
+  \"gui:Mask:0\": \"24\",
+  \"Address:0\": \"$(echo "$wireguard_json" | jq -r '.peer_ip')\",
+  \"Name:1\": \"Containers\",
+  \"PublicKey:1\": \"$(echo "$wireguard_json" | jq -r '.server_key')\",
+  \"Address:1\": \"$(echo "$wireguard_json" | jq -r '.peer_ip')\",
+  \"gui:Endpoint:1\": \"${WG_SERVER_IP}\",
+  \"gui:ListenPort:1\": \"$(echo "$wireguard_json" | jq -r '.server_port')\",
+  \"AllowedIPs:1\": \"0.0.0.0/0\",
+  \"DNS:1\": \"$dnsServer\",
+  \"PersistentKeepalive:1\": \"25\"
+}
+" > ${PIA_CONF_PATH} || exit 1
+echo -e "${green}OK!${nc}"
 
 if [[ $PIA_CONNECT == "true" ]]; then
   # Start the WireGuard interface.
